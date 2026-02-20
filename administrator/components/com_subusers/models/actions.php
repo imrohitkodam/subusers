@@ -36,8 +36,7 @@ class SubusersModelActions extends ListModel
 			$config['filter_fields'] = array(
 				'id', 'a.`id`',
 				'name', 'a.`name`',
-				'client', 'a.`client`',
-				'ordering', 'a.`ordering`'
+				'client', 'a.`client`'
 			);
 		}
 

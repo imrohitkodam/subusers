@@ -12,6 +12,7 @@ use Joomla\CMS\Language\Text;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\View\HtmlView;
+use Joomla\CMS\Toolbar\ToolbarHelper;
 
 /**
  * View to edit
@@ -76,33 +77,33 @@ class SubusersViewUser extends HtmlView
 
 		$canDo = SubusersHelper::getActions();
 
-		JToolBarHelper::title(Text::_('COM_SUBUSERS_TITLE_USER'), 'user.png');
+		ToolbarHelper::title(Text::_('COM_SUBUSERS_TITLE_USER'), 'user.png');
 
 		// If not checked out, can save the item.
 		if (!$checkedOut && ($canDo->get('core.edit') || ($canDo->get('core.create'))))
 		{
-			JToolBarHelper::apply('user.apply', 'JTOOLBAR_APPLY');
-			JToolBarHelper::save('user.save', 'JTOOLBAR_SAVE');
+			ToolbarHelper::apply('user.apply', 'JTOOLBAR_APPLY');
+			ToolbarHelper::save('user.save', 'JTOOLBAR_SAVE');
 		}
 
 		if (!$checkedOut && ($canDo->get('core.create')))
 		{
-			JToolBarHelper::custom('user.save2new', 'save-new.png', 'save-new_f2.png', 'JTOOLBAR_SAVE_AND_NEW', false);
+			ToolbarHelper::custom('user.save2new', 'save-new.png', 'save-new_f2.png', 'JTOOLBAR_SAVE_AND_NEW', false);
 		}
 
 		// If an existing item, can save to a copy.
 		if (!$isNew && $canDo->get('core.create'))
 		{
-			JToolBarHelper::custom('user.save2copy', 'save-copy.png', 'save-copy_f2.png', 'JTOOLBAR_SAVE_AS_COPY', false);
+			ToolbarHelper::custom('user.save2copy', 'save-copy.png', 'save-copy_f2.png', 'JTOOLBAR_SAVE_AS_COPY', false);
 		}
 
 		if (empty($this->item->id))
 		{
-			JToolBarHelper::cancel('user.cancel', 'JTOOLBAR_CANCEL');
+			ToolbarHelper::cancel('user.cancel', 'JTOOLBAR_CANCEL');
 		}
 		else
 		{
-			JToolBarHelper::cancel('user.cancel', 'JTOOLBAR_CLOSE');
+			ToolbarHelper::cancel('user.cancel', 'JTOOLBAR_CLOSE');
 		}
 	}
 }

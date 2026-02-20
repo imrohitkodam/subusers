@@ -40,7 +40,6 @@ class SubusersModelMappings extends ListModel
 				'client', 'a.`client`',
 				'created_by', 'a.`created_by`',
 				'ordering', 'a.`ordering`',
-				'state', 'a.`state`',
 				'role_name', 'roles.name',
 				'acion_name', 'actions.name'
 			);
@@ -124,14 +123,6 @@ class SubusersModelMappings extends ListModel
 		);
 		$query->from('`#__tjsu_role_action_map` AS a');
 
-		// Join over the users for the checked out user
-		$query->select("uc.name AS editor");
-		$query->join("LEFT", "#__users AS uc ON uc.id=a.checked_out");
-
-		// Join over the user field 'created_by'
-		$query->select('`created_by`.name AS `created_by`');
-		$query->join('LEFT', '#__users AS `created_by` ON `created_by`.id = a.`created_by`');
-
 		// Join over the roles table
 		$query->select("roles.name as role_name");
 		$query->join('LEFT', '#__tjsu_roles AS `roles` ON roles.id = a.role_id');
@@ -139,18 +130,6 @@ class SubusersModelMappings extends ListModel
 		// Join over the actions table
 		$query->select("actions.name as action_name");
 		$query->join('LEFT', '#__tjsu_actions AS `actions` ON actions.id = a.action_id');
-
-		// Filter by published state
-		$published = $this->getState('filter.state');
-
-		if (is_numeric($published))
-		{
-			$query->where('a.state = ' . (int) $published);
-		}
-		elseif ($published === '')
-		{
-			$query->where('(a.state IN (0, 1))');
-		}
 
 		// Filter by search in title
 		$search = $this->getState('filter.search');

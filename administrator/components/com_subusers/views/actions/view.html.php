@@ -15,6 +15,7 @@ use Joomla\CMS\Object\CMSObject;
 use Joomla\CMS\Helper\ContentHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Toolbar\ToolbarHelper;
+use Joomla\CMS\HTML\Helpers\Sidebar;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\View\HtmlView;
@@ -109,7 +110,7 @@ class SubusersViewActions extends HtmlView
 		SubusersHelper::addSubmenu('actions');
 
 		$this->addToolbar();
-		$this->sidebar = JHtmlSidebar::render();
+		$this->sidebar = Sidebar::render();
 
 		parent::display($tpl);
 	}
@@ -123,7 +124,7 @@ class SubusersViewActions extends HtmlView
 	 */
 	protected function addToolbar()
 	{
-		JToolBarHelper::title(Text::_('COM_SUBUSERS_TITLE_ACTIONS'), '');
+		ToolbarHelper::title(Text::_('COM_SUBUSERS_TITLE_ACTIONS'), '');
 
 		$canDo = $this->canDo;
 

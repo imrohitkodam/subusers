@@ -18,6 +18,7 @@ use Joomla\CMS\Toolbar\ToolbarHelper;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\View\HtmlView;
+use Joomla\CMS\HTML\Helpers\Sidebar;
 
 /**
  * View class for a list of Subusers.
@@ -109,7 +110,7 @@ class SubusersViewUsers extends HtmlView
 		SubusersHelper::addSubmenu('users');
 
 		$this->addToolbar();
-		$this->sidebar = JHtmlSidebar::render();
+		$this->sidebar = Sidebar::render();
 
 		parent::display($tpl);
 	}
@@ -123,7 +124,7 @@ class SubusersViewUsers extends HtmlView
 	 */
 	protected function addToolbar()
 	{
-		ToolBarHelper::title(Text::_('COM_SUBUSERS_TITLE_USERS'), 'users.png');
+		ToolbarHelper::title(Text::_('COM_SUBUSERS_TITLE_USERS'), 'users.png');
 
 		$canDo = $this->canDo;
 

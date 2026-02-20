@@ -13,6 +13,7 @@ use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Object\CMSObject;
 use Joomla\CMS\Factory;
+use Joomla\CMS\HTML\Helpers\Sidebar;
 
 /**
  * Subusers helper.
@@ -30,22 +31,22 @@ class SubusersHelper
 	 */
 	public static function addSubmenu($vName = '')
 	{
-		JHtmlSidebar::addEntry(
+		Sidebar::addEntry(
 					Text::_('COM_SUBUSERS_TITLE_ROLES'),
 					'index.php?option=com_subusers&view=roles',
 					$vName == 'roles'
 				);
-		JHtmlSidebar::addEntry(
+		Sidebar::addEntry(
 					Text::_('COM_SUBUSERS_TITLE_ACTIONS'),
 					'index.php?option=com_subusers&view=actions',
 					$vName == 'actions'
 				);
-		JHtmlSidebar::addEntry(
+		Sidebar::addEntry(
 					Text::_('COM_SUBUSERS_TITLE_USERS'),
 					'index.php?option=com_subusers&view=users',
 					$vName == 'users'
 				);
-		JHtmlSidebar::addEntry(
+		Sidebar::addEntry(
 			Text::_('COM_SUBUSERS_TITLE_MAPPINGS'),
 			'index.php?option=com_subusers&view=mappings',
 			$vName == 'mappings'

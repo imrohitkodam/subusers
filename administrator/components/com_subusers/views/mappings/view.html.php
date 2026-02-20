@@ -13,6 +13,7 @@ use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\MVC\View\HtmlView;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Toolbar\ToolbarHelper;
+use Joomla\CMS\HTML\Helpers\Sidebar;
 
 jimport('joomla.application.component.view');
 
@@ -56,7 +57,7 @@ class SubusersViewMappings extends HtmlView
 
 		$this->addToolbar();
 
-		$this->sidebar = JHtmlSidebar::render();
+		$this->sidebar = Sidebar::render();
 		parent::display($tpl);
 	}
 
@@ -74,7 +75,7 @@ class SubusersViewMappings extends HtmlView
 		$state = $this->get('State');
 		$canDo = SubusersHelper::getActions($state->get('filter.category_id'));
 
-		JToolBarHelper::title(Text::_('COM_SUBUSERS_TITLE_MAPPINGS'), 'mappings.png');
+		ToolbarHelper::title(Text::_('COM_SUBUSERS_TITLE_MAPPINGS'), 'mappings.png');
 
 		// Check if the form exists before showing the add/edit buttons
 		$formPath = JPATH_ADMINISTRATOR . '/components/com_subusers/views/mapping';
@@ -83,13 +84,13 @@ class SubusersViewMappings extends HtmlView
 		{
 			if ($canDo->get('core.create'))
 			{
-				JToolBarHelper::addNew('mapping.add', 'JTOOLBAR_NEW');
+				ToolbarHelper::addNew('mapping.add', 'JTOOLBAR_NEW');
 				ToolbarHelper::custom('mappings.duplicate', 'copy.png', 'copy_f2.png', 'JTOOLBAR_DUPLICATE', true);
 			}
 
 			if ($canDo->get('core.edit') && isset($this->items[0]))
 			{
-				JToolBarHelper::editList('mapping.edit', 'JTOOLBAR_EDIT');
+				ToolbarHelper::editList('mapping.edit', 'JTOOLBAR_EDIT');
 			}
 		}
 
@@ -97,25 +98,25 @@ class SubusersViewMappings extends HtmlView
 		{
 			if (isset($this->items[0]->state))
 			{
-				JToolBarHelper::divider();
-				JToolBarHelper::custom('mappings.publish', 'publish.png', 'publish_f2.png', 'JTOOLBAR_PUBLISH', true);
-				JToolBarHelper::custom('mappings.unpublish', 'unpublish.png', 'unpublish_f2.png', 'JTOOLBAR_UNPUBLISH', true);
+				ToolbarHelper::divider();
+				ToolbarHelper::custom('mappings.publish', 'publish.png', 'publish_f2.png', 'JTOOLBAR_PUBLISH', true);
+				ToolbarHelper::custom('mappings.unpublish', 'unpublish.png', 'unpublish_f2.png', 'JTOOLBAR_UNPUBLISH', true);
 			}
 			elseif (isset($this->items[0]))
 			{
 				// If this component does not use state then show a direct delete button as we can not trash
-				JToolBarHelper::deleteList('', 'mappings.delete', 'JTOOLBAR_DELETE');
+				ToolbarHelper::deleteList('', 'mappings.delete', 'JTOOLBAR_DELETE');
 			}
 
 			if (isset($this->items[0]->state))
 			{
-				JToolBarHelper::divider();
-				JToolBarHelper::archiveList('mappings.archive', 'JTOOLBAR_ARCHIVE');
+				ToolbarHelper::divider();
+				ToolbarHelper::archiveList('mappings.archive', 'JTOOLBAR_ARCHIVE');
 			}
 
 			if (isset($this->items[0]->checked_out))
 			{
-				JToolBarHelper::custom('mappings.checkin', 'checkin.png', 'checkin_f2.png', 'JTOOLBAR_CHECKIN', true);
+				ToolbarHelper::custom('mappings.checkin', 'checkin.png', 'checkin_f2.png', 'JTOOLBAR_CHECKIN', true);
 			}
 		}
 
@@ -124,34 +125,25 @@ class SubusersViewMappings extends HtmlView
 		{
 			if ($state->get('filter.state') == -2 && $canDo->get('core.delete'))
 			{
-				JToolBarHelper::deleteList('', 'mappings.delete', 'JTOOLBAR_EMPTY_TRASH');
-				JToolBarHelper::divider();
+				ToolbarHelper::deleteList('', 'mappings.delete', 'JTOOLBAR_EMPTY_TRASH');
+				ToolbarHelper::divider();
 			}
 			elseif ($canDo->get('core.edit.state'))
 			{
-				JToolBarHelper::trash('mappings.trash', 'JTOOLBAR_TRASH');
-				JToolBarHelper::divider();
+				ToolbarHelper::trash('mappings.trash', 'JTOOLBAR_TRASH');
+				ToolbarHelper::divider();
 			}
 		}
 
 		if ($canDo->get('core.admin'))
 		{
-			JToolBarHelper::preferences('com_subusers');
+			ToolbarHelper::preferences('com_subusers');
 		}
 
 		// Set sidebar action - New in 3.0
-		JHtmlSidebar::setAction('index.php?option=com_subusers&view=mappings');
+		Sidebar::setAction('index.php?option=com_subusers&view=mappings');
 
 		$this->extra_sidebar = '';
-		JHtmlSidebar::addFilter(
-
-			Text::_('JOPTION_SELECT_PUBLISHED'),
-
-			'filter_published',
-
-			HTMLHelper::_('select.options', HTMLHelper::_('jgrid.publishedOptions'), "value", "text", $this->state->get('filter.state'), true)
-
-		);
 	}
 
 	/**
@@ -166,7 +158,6 @@ class SubusersViewMappings extends HtmlView
 			'a.`role_id`' => Text::_('COM_SUBUSERS_MAPPINGS_ROLE_ID'),
 			'a.`action_id`' => Text::_('COM_SUBUSERS_MAPPINGS_ACTION_ID'),
 			'a.`ordering`' => Text::_('JGRID_HEADING_ORDERING'),
-			'a.`state`' => Text::_('JSTATUS'),
 		);
 	}
 }

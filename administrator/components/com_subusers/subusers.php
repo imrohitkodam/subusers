@@ -43,7 +43,8 @@ if (file_exists($controllerPath))
 }
 else
 {
-	$controller = new BaseController;
+	require_once JPATH_COMPONENT . '/controller.php';
+	$controller = new SubusersController;
 }
 
 $controller->execute($task);

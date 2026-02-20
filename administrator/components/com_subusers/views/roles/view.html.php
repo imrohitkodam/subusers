@@ -13,6 +13,7 @@ use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\MVC\View\HtmlView;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Toolbar\ToolbarHelper;
+use Joomla\CMS\HTML\Helpers\Sidebar;
 
 jimport('joomla.application.component.view');
 
@@ -54,7 +55,7 @@ class SubusersViewRoles extends HtmlView
 
 		$this->addToolbar();
 
-		$this->sidebar = JHtmlSidebar::render();
+		$this->sidebar = Sidebar::render();
 		parent::display($tpl);
 	}
 
@@ -72,7 +73,7 @@ class SubusersViewRoles extends HtmlView
 		$state = $this->get('State');
 		$canDo = SubusersHelper::getActions($state->get('filter.category_id'));
 
-		JToolBarHelper::title(Text::_('COM_SUBUSERS_TITLE_ROLES'), 'roles.png');
+		ToolbarHelper::title(Text::_('COM_SUBUSERS_TITLE_ROLES'), 'roles.png');
 
 		// Check if the form exists before showing the add/edit buttons
 		$formPath = JPATH_ADMINISTRATOR . '/components/com_subusers/views/role';
@@ -81,13 +82,13 @@ class SubusersViewRoles extends HtmlView
 		{
 			if ($canDo->get('core.create'))
 			{
-				JToolBarHelper::addNew('role.add', 'JTOOLBAR_NEW');
+				ToolbarHelper::addNew('role.add', 'JTOOLBAR_NEW');
 				ToolbarHelper::custom('roles.duplicate', 'copy.png', 'copy_f2.png', 'JTOOLBAR_DUPLICATE', true);
 			}
 
 			if ($canDo->get('core.edit') && isset($this->items[0]))
 			{
-				JToolBarHelper::editList('role.edit', 'JTOOLBAR_EDIT');
+				ToolbarHelper::editList('role.edit', 'JTOOLBAR_EDIT');
 			}
 		}
 
@@ -95,25 +96,25 @@ class SubusersViewRoles extends HtmlView
 		{
 			if (isset($this->items[0]->state))
 			{
-				JToolBarHelper::divider();
-				JToolBarHelper::custom('roles.publish', 'publish.png', 'publish_f2.png', 'JTOOLBAR_PUBLISH', true);
-				JToolBarHelper::custom('roles.unpublish', 'unpublish.png', 'unpublish_f2.png', 'JTOOLBAR_UNPUBLISH', true);
+				ToolbarHelper::divider();
+				ToolbarHelper::custom('roles.publish', 'publish.png', 'publish_f2.png', 'JTOOLBAR_PUBLISH', true);
+				ToolbarHelper::custom('roles.unpublish', 'unpublish.png', 'unpublish_f2.png', 'JTOOLBAR_UNPUBLISH', true);
 			}
 			elseif (isset($this->items[0]))
 			{
 				// If this component does not use state then show a direct delete button as we can not trash
-				JToolBarHelper::deleteList('', 'roles.delete', 'JTOOLBAR_DELETE');
+				ToolbarHelper::deleteList('', 'roles.delete', 'JTOOLBAR_DELETE');
 			}
 
 			if (isset($this->items[0]->state))
 			{
-				JToolBarHelper::divider();
-				JToolBarHelper::archiveList('roles.archive', 'JTOOLBAR_ARCHIVE');
+				ToolbarHelper::divider();
+				ToolbarHelper::archiveList('roles.archive', 'JTOOLBAR_ARCHIVE');
 			}
 
 			if (isset($this->items[0]->checked_out))
 			{
-				JToolBarHelper::custom('roles.checkin', 'checkin.png', 'checkin_f2.png', 'JTOOLBAR_CHECKIN', true);
+				ToolbarHelper::custom('roles.checkin', 'checkin.png', 'checkin_f2.png', 'JTOOLBAR_CHECKIN', true);
 			}
 		}
 
@@ -122,13 +123,13 @@ class SubusersViewRoles extends HtmlView
 		{
 			if ($state->get('filter.state') == -2 && $canDo->get('core.delete'))
 			{
-				JToolBarHelper::deleteList('', 'roles.delete', 'JTOOLBAR_EMPTY_TRASH');
-				JToolBarHelper::divider();
+				ToolbarHelper::deleteList('', 'roles.delete', 'JTOOLBAR_EMPTY_TRASH');
+				ToolbarHelper::divider();
 			}
 			elseif ($canDo->get('core.edit.state'))
 			{
-				JToolBarHelper::trash('roles.trash', 'JTOOLBAR_TRASH');
-				JToolBarHelper::divider();
+				ToolbarHelper::trash('roles.trash', 'JTOOLBAR_TRASH');
+				ToolbarHelper::divider();
 			}
 		}
 
@@ -140,14 +141,14 @@ class SubusersViewRoles extends HtmlView
 
 		if ($canDo->get('core.admin'))
 		{
-			JToolBarHelper::preferences('com_subusers');
+			ToolbarHelper::preferences('com_subusers');
 		}
 
 		// Set sidebar action - New in 3.0
-		JHtmlSidebar::setAction('index.php?option=com_subusers&view=roles');
+		Sidebar::setAction('index.php?option=com_subusers&view=roles');
 
 		$this->extra_sidebar = '';
-		JHtmlSidebar::addFilter(
+		Sidebar::addFilter(
 
 			Text::_('JOPTION_SELECT_PUBLISHED'),
 
