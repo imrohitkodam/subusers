@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" version="6.0" method="upgrade">
+    <name>com_subusers</name>
+    <creationDate>2016-01-07</creationDate>
+    <copyright>Copyright (C) 2009 - 2018 Techjoomla. All rights reserved.</copyright>
+    <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
+    <author>Techjoomla</author>
+    <authorEmail>contact@techjoomla.com</authorEmail>
+    <authorUrl>https://techjoomla.com</authorUrl>
+    <version>2.0.0</version>
+    <description>This is to sudo-make role based user management easy. Joomla 6 compatible version.</description>
+    
+    <scriptfile>script.php</scriptfile>
+    
+    <install>
+        <sql>
+            <file driver="mysql" charset="utf8">administrator/sql/install.mysql.utf8.sql</file>
+        </sql>
+    </install>
+    <uninstall>
+        <sql>
+            <file driver="mysql" charset="utf8">administrator/sql/uninstall.mysql.utf8.sql</file>
+        </sql>
+    </uninstall>
+
+    <!-- Minimum requirements -->
+    <minimumPhpVersion>8.1</minimumPhpVersion>
+    <minimumJoomlaVersion>6.0</minimumJoomlaVersion>
+
+    <files folder="site">
+        <filename>index.html</filename>
+        <filename>subusers.php</filename>
+        <filename>controller.php</filename>
+        <filename>router.php</filename>
+        <folder>views</folder>
+        <folder>models</folder>
+        <folder>controllers</folder>
+        <folder>helpers</folder>
+    </files>
+    <media destination="com_subusers" folder="media">
+        <folder>images</folder>
+    </media>
+    <languages folder="languages/site">
+		<language tag="en-GB">en-GB/en-GB.com_subusers.ini</language>
+    </languages>
+    <administration>
+        <menu img="media/com_subusers/images/s_com_subusers.png" >COM_SUBUSERS</menu>
+        <submenu>
+			<menu link="option=com_subusers&amp;view=users" view="users" img="media/com_subusers/images/s_users.png" alt="Subusers/Users">COM_SUBUSERS_TITLE_USERS</menu>
+			<menu link="option=com_subusers&amp;view=roles" view="roles" img="media/com_subusers/images/s_roles.png" alt="Subusers/Roles">COM_SUBUSERS_TITLE_ROLES</menu>
+			<menu link="option=com_subusers&amp;view=actions" view="actions" img="media/com_subusers/images/s_actions.png" alt="Subusers/Actions">COM_SUBUSERS_TITLE_ACTIONS</menu>
+			<menu link="option=com_subusers&amp;view=mappings" view="mappings" img="media/com_subusers/images/s_mappings.png" alt="Subusers/Mappings">COM_SUBUSERS_TITLE_MAPPINGS</menu>
+        </submenu>
+        <files folder="administrator">
+            <filename>access.xml</filename>
+            <filename>config.xml</filename>
+            <filename>controller.php</filename>
+            <filename>index.html</filename>
+            <filename>subusers.php</filename>
+            <filename>script.php</filename>
+            <folder>controllers</folder>
+            <folder>includes</folder>
+            <folder>libraries</folder>
+            <folder>helpers</folder>
+            <folder>models</folder>
+            <folder>sql</folder>
+            <folder>tables</folder>
+            <folder>views</folder>
+        </files>
+        <languages folder="languages/administrator">
+			<language tag="en-GB">en-GB/en-GB.com_subusers.ini</language>
+			<language tag="en-GB">en-GB/en-GB.com_subusers.sys.ini</language>
+        </languages>
+    </administration>
+</extension>

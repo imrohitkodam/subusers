@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form>
+	<fieldset>
+		<field
+			name="id"
+			type="hidden"
+			default="0"
+			filter="INT"
+		/>
+		<field
+			name="user_id"
+			type="user"
+			size="40"
+			class="inputbox"
+			label="COM_SUBUSERS_USERS_USER_ID"
+			description="COM_SUBUSERS_FORM_DESC_USER_NAME"
+			required="true"
+			filter="INT"
+		/>
+
+		<field
+			name="role_id"
+			type="sql"
+			label="COM_SUBUSERS_TITLE_ROLE"
+			query="SELECT id, name FROM #__tjsu_roles"
+			key_field="id"
+			value_field="name"
+			required="true"
+			>
+			<option value="">COM_SUBUSERS_TITLE_ROLE_DEFAULT</option>
+		</field>
+
+		<field
+			name="client"
+			type="text"
+			size="40"
+			class="inputbox"
+			label="COM_SUBUSERS_FORM_LBL_USER_CLIENT"
+			description="COM_SUBUSERS_FORM_DESC_ACTION_CLIENT"
+			filter="string"
+		/>
+
+		<field
+			name="created_by"
+			type="hidden"
+			class="readonly"
+			readonly="true"
+			filter="unset"
+		/>
+		<field
+			name="modified_by"
+			type="hidden"
+			class="readonly"
+			readonly="true"
+			filter="unset"
+		/>
+		<field
+			name="modified_date"
+			type="hidden"
+		/>
+		<field
+			name="created_date"
+			type="hidden"
+		/>
+	</fieldset>
+</form>

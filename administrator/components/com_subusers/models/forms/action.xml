@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form>
+	<fieldset>
+		<field
+			name="id"
+			type="hidden"
+			default="0"
+		/>
+		<field
+			name="name"
+			type="text"
+			size="40"
+			class="inputbox"
+			label="COM_SUBUSERS_FORM_LBL_ACTION_NAME"
+			description="COM_SUBUSERS_FORM_DESC_ACTION_NAME"
+			required="true"
+			filter="string"
+		/>
+		<field
+			name="code"
+			type="text"
+			size="40"
+			class="inputbox"
+			label="COM_SUBUSERS_FORM_LBL_ACTION_CODE"
+			description="COM_SUBUSERS_FORM_DESC_ACTION_CODE"
+			required="true"
+			filter="string"
+		/>
+		<field
+			name="client"
+			type="text"
+			size="40"
+			class="inputbox"
+			label="COM_SUBUSERS_FORM_LBL_USER_CLIENT"
+			description="COM_SUBUSERS_FORM_DESC_ACTION_CLIENT"
+			required="true"
+			filter="string"
+		/>
+		<field
+			name="created_date"
+			type="hidden"
+		/>
+	</fieldset>
+</form>

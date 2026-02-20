@@ -1,0 +1,5 @@
+-- DROP TABLE IF EXISTS `#__tjsu_organizations`;
+-- DROP TABLE IF EXISTS `#__tjsu_users`;
+-- DROP TABLE IF EXISTS `#__tjsu_roles`;
+-- DROP TABLE IF EXISTS `#__tjsu_actions`;
+-- DROP TABLE IF EXISTS `#__tjsu_role_action_map`;
