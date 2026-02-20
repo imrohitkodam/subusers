@@ -1,0 +1,8 @@
+/* CSS for frontend*/
+#item-form .radio input{
+margin-left:5px !important;
+}
+
+#item-form .chzn-container{
+width:200px !important;
+}

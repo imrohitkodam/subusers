@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+	<fieldset>
+		<field name="id" type="text" readonly="true" class="readonly" default="0" description="JGLOBAL_FIELD_ID_DESC" />
+		<field name="title" type="text" maxlength="255" filter="raw" required="true" label="COM_TJUCM_FORM_LBL_DOCUMENT_TITLE" description="COM_TJUCM_FORM_LBL_DOCUMENT_TITLE_DESC" hint="COM_TJUCM_FORM_LBL_TYPE_TITLE" />
+		<field name="document_type" type="radio" default="0" label="COM_TJUCM_FORM_LBL_DOCUMENT_TYPE_LBL" description="COM_TJUCM_FORM_LBL_DOCUMENT_TYPE_DESC" class="">
+		  <option value="0">COM_TJUCM_FORM_LBL_DOCUMENT_TYPE_SINGLE_RECORD_OPTION</option>
+		  <option value="1">COM_TJUCM_FORM_LBL_DOCUMENT_TYPE_MULTIPLE_RECORD_OPTION</option>
+		</field>
+		<field name="ucm_type"
+			type="sql"
+			default="10"
+			label="COM_TJUCM_FORM_LBL_TYPE"
+			required="true"
+			query="SELECT id, title FROM #__tj_ucm_types WHERE state=1"
+			key_field="id"
+			value_field="title">
+			<option value="">COM_TJUCM_SELECT_TYPE_OPTION</option>
+		</field>
+		<field name="description" type="textarea" cols="5" rows="5" label="COM_TJUCM_FORM_LBL_DOCUMENT_DESCRIPTION" description="COM_TJUCM_FORM_LBL_DOCUMENT_DESCRIPTION_DESC" hint="COM_TJUCM_FORM_LBL_TYPE_TYPE_DESCRIPTION" />
+
+		<field name="ropprocess"
+			type="sql"
+			default="10" showon="ucm_type:23[AND]document_type:0"
+			label="COM_TJUCM_FORM_LBL_PROCESS"
+			query="SELECT DISTINCT fo.id,fo.`value`
+				FROM z467w_tjfields_fields_value v
+				JOIN z467w_tjfields_fields f ON v.`field_id` = f.`id`
+				Join z467w_tjfields_options fo ON f.`id` = fo.`field_id`
+				WHERE v.`client` = 'com_tjucm.rop' AND f.name = 'com_tjucm_rop_neworexisting'"
+			key_field="id"
+			value_field="value">
+			<option value="">COM_TJUCM_SELECT_PROCESS_OPTION</option>
+		</field>
+
+
+
+
+		<field name="document_body" type="editor" label="COM_TJUCM_FORM_LBL_DOCUMENT_TEXT" description="COM_TJUCM_FORM_LBL_DOCUMENT_TEXT" validation="required" filter="safehtml"/>
+		<field name="params" type="textarea" label="COM_TJUCM_FORM_LBL_TYPE_PARAMS" description="COM_TJUCM_FORM_DESC_TYPE_PARAMS" hint="COM_TJUCM_FORM_LBL_TYPE_PARAMS"/>
+		<field name="state" default="1" type="list" label="JSTATUS" description="JFIELD_PUBLISHED_DESC" class="inputbox" size="1">
+			<option value="1">JPUBLISHED</option>
+			<option value="0">JUNPUBLISHED</option>
+		</field>
+	</fieldset>
+	<fieldset name="basic">
+		<fields name="params" label="COM_TJUCM_FIELD_BASIC_LABEL">
+			<field name="document_font" type="list" default="DeJaVu Sans"
+				label="COM_TJUCM_DOCUMENT_PDF_FONT_LABEL" description="COM_TJUCM_DOCUMENT_PDF_FONT_DESC">
+				<option value="Courier">COM_TJUCM_DOCUMENT_PDF_FONT_COURIER</option>
+				<option value="DeJaVu Sans">COM_TJUCM_DOCUMENT_PDF_FONT_DEJAVUSANS</option>
+				<option value="Helvetica">COM_TJUCM_DOCUMENT_PDF_FONT_HELVETICA</option>
+				<option value="Times new roman">COM_TJUCM_DOCUMENT_PDF_FONT_TIMES</option>
+				<option value="custom">COM_TJUCM_DOCUMENT_PDF_FONT_CUSTOM</option>
+			</field>
+			<field name="document_custom_font" type="text" default="DeJaVu Sans" label="COM_TJUCM_DOCUMENT_PDF_CUSTOMFONT_LABEL"
+				showon="document_font:custom" description="COM_TJUCM_DOCUMENT_PDF_CUSTOMFONT_DESC" />
+			<field name="document_page_size" type="list" default="A4"
+				description="COM_TJUCM_DOCUMENT_PDF_SIZE_DESC"
+				label="COM_TJUCM_DOCUMENT_PDF_SIZE">
+				<option value="A1">COM_TJUCM_DOCUMENT_PDF_SIZE_A1</option>
+				<option value="A2">COM_TJUCM_DOCUMENT_PDF_SIZE_A2</option>
+				<option value="A3">COM_TJUCM_DOCUMENT_PDF_SIZE_A3</option>
+				<option value="A4">COM_TJUCM_DOCUMENT_PDF_SIZE_A4</option>
+				<option value="A5">COM_TJUCM_DOCUMENT_PDF_SIZE_A5</option>
+				<option value="A6">COM_TJUCM_DOCUMENT_PDF_SIZE_A6</option>
+				<option value="Legal">COM_TJUCM_DOCUMENT_PDF_SIZE_LEGAL</option>
+				<option value="Letter">COM_TJUCM_DOCUMENT_PDF_SIZE_LETTER</option>
+				<option value="custom">COM_TJUCM_DOCUMENT_PDF_SIZE_CUSTOME</option>
+			</field>
+			<field name="document_pdf_width" class="validate-numeric" type="text" default="80" label="COM_TJUCM_DOCUMENT_PDF_WIDTH"
+				showon="document_page_size:custom" description="COM_TJUCM_DOCUMENT_PDF_WIDTH_DESC" />
+			<field name="document_pdf_height" class="validate-numeric" type="text" default="80" label="COM_TJUCM_DOCUMENT_PDF_HEIGHT"
+				showon="document_page_size:custom" description="COM_TJUCM_DOCUMENT_PDF_HEIGHT_DESC" />
+			<field name="orientation" class="btn-group" type="radio"  default="landscape" description="COM_TJUCM_FORM_LBL_DOCUMENT_ORIENTATION_DESC" label="COM_TJUCM_FORM_LBL_DOCUMENT_ORIENTATION_TITLE" >
+				<option value="portrait">COM_TJUCM_DOCUMENT_PORTRAIT</option>
+				<option value="landscape">COM_TJUCM_DOCUMENT_LANDSCAPE</option>
+			</field>
+		</fields>
+	</fieldset>
+	<fieldset name="permissions">
+		<field name="asset_id" type="hidden" filter="unset" />
+		<field name="rules" type="rules" label="JFIELD_RULES_LABEL" translate_label="false" filter="rules" validate="rules" class="inputbox" component="com_tjucm" section="document" />
+	</fieldset>
+</form>

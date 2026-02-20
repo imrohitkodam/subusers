@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form>
+	<fields name="filter">
+		<field
+			name="search"
+			type="text"
+			label=""
+			hint="COM_TJUCM_SEARCH_FILTER_SUBMIT"
+			description="COM_TJUCM_SEARCH_TOOLS_DESC"
+		/>
+		<field
+			name="state"
+			type="list"
+			label="COM_TJUCM_DOCUMENT_STATE"
+			description="COM_TJUCM_DOCUMENT_STATE_DESC"
+			onchange="this.form.submit();">
+			<option value="">COM_TJUCM_DOCUMENT_FILTER_STATE</option>
+			<option value="1">JPUBLISHED</option>
+			<option value="0">JUNPUBLISHED</option>
+		</field>
+		<field
+			name="ucm_type"
+			type="sql"
+			label="COM_TJUCM_DOCUMENT_STATE"
+			query="SELECT id, title FROM #__tj_ucm_types WHERE state=1" key_field="id" value_field="title"
+			onchange="this.form.submit();"
+			>
+			<option value="">COM_TJUCM_DOCUMENT_FILTER_TYPE</option>
+		</field>
+	</fields>
+
+	<fields name="list">
+		<field
+			name="limit"
+			type="limitbox"
+			label="COM_CONTENT_LIST_LIMIT"
+			description="COM_CONTENT_LIST_LIMIT_DESC"
+			class="inputbox input-mini pull-right"
+			default=""
+			onchange="this.form.submit();"
+		/>
+	</fields>
+</form>

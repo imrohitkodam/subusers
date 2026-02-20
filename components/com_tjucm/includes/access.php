@@ -1,0 +1,424 @@
+<?php
+/**
+ * @package     Tjucm
+ * @subpackage  com_tjucm
+ *
+ * @author      Techjoomla <extensions@techjoomla.com>
+ * @copyright   Copyright (C) 2009 - 2020 Techjoomla. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
+ */
+
+defined('_JEXEC') or die();
+use Joomla\CMS\Factory;
+use Joomla\CMS\Table\Table;
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\String\StringHelper;
+
+require_once JPATH_SITE . '/components/com_tjucm/includes/defines.php';
+
+/**
+ * Tjucm factory class.
+ *
+ * This class perform the helpful operation required to Tjucm package
+ *
+ * @since  __DEPLOY_VERSION__
+ */
+class TjucmAccess
+{
+	public static function canCopyItem($ucmTypeId, $userId = 0, $cluster_id = 0)
+	{
+		$user = empty($userId) ? Factory::getUser() : Factory::getUser($userId);
+
+		// DPE Hack for ACL Check
+		if (TjucmAccess::hasCluster($ucmTypeId) && !$user->authorise('core.manageall', 'com_cluster'))
+		{
+			// Get com_subusers component status
+			$subUserExist = ComponentHelper::getComponent('com_subusers', true)->enabled;
+
+			// Check user have permission to edit record of assigned cluster
+			if ($subUserExist)
+			{
+				JLoader::import("/components/com_subusers/includes/rbacl", JPATH_ADMINISTRATOR);
+
+				/*
+					return RBACL::check($user->id, 'com_cluster', 'core.createitem.' . $ucmTypeId);
+				*/
+
+				// DPE hack start to allow copy if org is generic
+				$genericOrg = ComponentHelper::getParams('com_dpe')->get('cluster_id', '0', 'INT');
+
+				if ($cluster_id == $genericOrg)
+				{
+					return true;
+				}
+
+				// DPE hack end
+
+				return (RBACL::check($user->id, 'com_cluster', 'core.cancopyitem.' . $ucmTypeId, 'com_tjucm', $cluster_id));
+
+			}
+		}
+		else
+		{
+			return $user->authorise('core.type.copyitem', 'com_tjucm.type.' . $ucmTypeId);
+		}
+	}
+
+	public static function canCreate($ucmTypeId, $userId = 0)
+	{
+		$user = empty($userId) ? Factory::getUser() : Factory::getUser($userId);
+
+		// DPE Hack for ACL Check
+		if (TjucmAccess::hasCluster($ucmTypeId) && !$user->authorise('core.manageall', 'com_cluster'))
+		{
+			// Get com_subusers component status
+			$subUserExist = ComponentHelper::getComponent('com_subusers', true)->enabled;
+
+			// Check user have permission to edit record of assigned cluster
+			if ($subUserExist)
+			{
+				JLoader::import("/components/com_subusers/includes/rbacl", JPATH_ADMINISTRATOR);
+
+				/*
+					return RBACL::check($user->id, 'com_cluster', 'core.createitem.' . $ucmTypeId);
+				*/
+
+				return (RBACL::check($user->id, 'com_cluster', 'core.createitem.' . $ucmTypeId, 'com_tjucm', $itemTable->cluster_id));
+			}
+		}
+		else
+		{
+			return $user->authorise('core.type.createitem', 'com_tjucm.type.' . $ucmTypeId);
+		}
+	}
+
+	public static function canImport($ucmTypeId, $userId = 0)
+	{
+		$user = empty($userId) ? Factory::getUser() : Factory::getUser($userId);
+
+		// DPE Hack for ACL Check
+		if (TjucmAccess::hasCluster($ucmTypeId) && !$user->authorise('core.manageall', 'com_cluster'))
+		{
+			// Get com_subusers component status
+			$subUserExist = ComponentHelper::getComponent('com_subusers', true)->enabled;
+
+			// Check user have permission to edit record of assigned cluster
+			if ($subUserExist)
+			{
+				JLoader::import("/components/com_subusers/includes/rbacl", JPATH_ADMINISTRATOR);
+
+				/*
+				return RBACL::check($user->id, 'com_cluster', 'core.importitem.' . $ucmTypeId)
+				&& RBACL::check(Factory::getUser()->id, 'com_cluster', 'core.createtitem.' . $ucmTypeId);
+				*/
+
+				$joomlaPermission = $user->authorise('core.type.importitem', 'com_tjucm.type.' . $ucmTypeId);
+
+				return (RBACL::check($user->id, 'com_cluster', 'core.importitem.' . $ucmTypeId, 'com_tjucm', $itemTable->cluster_id));
+
+			}
+		}
+		else
+		{
+			return $user->authorise('core.type.importitem', 'com_tjucm.type.' . $ucmTypeId);
+		}
+	}
+
+	public static function canView($ucmTypeId, $contentId, $userId = 0)
+	{  
+		$user = empty($userId) ? Factory::getUser() : Factory::getUser($userId);
+
+		JLoader::import('components.com_tjucm.tables.item', JPATH_ADMINISTRATOR);
+		$itemTable = Table::getInstance('Item', 'TjucmTable', array('dbo', Factory::getDbo()));
+		$itemTable->load($contentId);
+
+		if ($user->id == $itemTable->created_by)
+		{
+			return true;
+		}
+
+		JLoader::import("/components/com_subusers/includes/rbacl", JPATH_ADMINISTRATOR);
+
+		// DPE Hack for ACL Check
+		if (TjucmAccess::hasCluster($ucmTypeId) && !$user->authorise('core.manageall', 'com_cluster'))
+		{
+			/*
+			if (RBACL::check($user->id, 'com_cluster', 'core.viewallitem.' . $ucmTypeId))
+			{
+				return true;
+			}
+			*/
+
+			// Get com_subusers component status
+			$subUserExist = ComponentHelper::getComponent('com_subusers', true)->enabled;
+
+			// Check user have permission to edit record of assigned cluster
+			if ($subUserExist)
+			{
+				/*
+				return RBACL::check($user->id, 'com_cluster', 'core.viewitem.' . $ucmTypeId, $itemTable->cluster_id);
+				*/
+				$joomlaPermission = $user->authorise('core.type.viewitem', 'com_tjucm.type.' . $ucmTypeId);
+				
+				// If the cluster is belong to generic school  then it wont check for the access.
+				$params   = ComponentHelper::getParams('com_dpe');
+				
+				if ($itemTable->cluster_id == $params->get('cluster_id'))
+				{
+					return true;
+				}
+
+				return (RBACL::check($user->id, 'com_cluster', 'core.viewitem.' . $ucmTypeId, 'com_tjucm', $itemTable->cluster_id));
+				
+			}
+		}
+		else
+		{
+			return $user->authorise('core.type.viewitem', 'com_tjucm.type.' . $ucmTypeId);
+		}
+	}
+
+	public static function canEdit($ucmTypeId, $contentId, $userId = 0)
+	{
+		$user = empty($userId) ? Factory::getUser() : Factory::getUser($userId);
+
+		// DPE Hack for ACL Check
+		if (TjucmAccess::hasCluster($ucmTypeId) && !$user->authorise('core.manageall', 'com_cluster'))
+		{
+			JLoader::import("/components/com_subusers/includes/rbacl", JPATH_ADMINISTRATOR);
+
+			/*
+			if (RBACL::check($user->id, 'com_cluster', 'core.editallitem.' . $ucmTypeId))
+			{
+				return true;
+			}
+			*/
+
+			// Get com_subusers component status
+			$subUserExist = ComponentHelper::getComponent('com_subusers', true)->enabled;
+
+			// Check user have permission to edit record of assigned cluster
+			if ($subUserExist)
+			{
+				JLoader::import('components.com_tjucm.tables.item', JPATH_ADMINISTRATOR);
+				$itemTable = Table::getInstance('Item', 'TjucmTable', array('dbo', Factory::getDbo()));
+				$itemTable->load($contentId);
+
+				/*
+				return RBACL::check($user->id, 'com_cluster', 'core.edititem.' . $ucmTypeId, $itemTable->cluster_id);
+				*/
+
+				$params   = ComponentHelper::getParams('com_dpe');
+				
+				if ($itemTable->cluster_id == $params->get('cluster_id'))
+				{
+					return true;
+				}
+				
+				return (RBACL::check($user->id, 'com_cluster', 'core.edititem.' . $ucmTypeId, 'com_tjucm', $itemTable->cluster_id));
+			}
+		}
+		else
+		{
+			return $user->authorise('core.type.edititem', 'com_tjucm.type.' . $ucmTypeId);
+		}
+	}
+
+	public static function canEditState($ucmTypeId, $contentId, $userId = 0)
+	{
+		$user = empty($userId) ? Factory::getUser() : Factory::getUser($userId);
+
+		// DPE Hack for ACL Check
+		if (TjucmAccess::hasCluster($ucmTypeId) && !$user->authorise('core.manageall', 'com_cluster'))
+		{
+			JLoader::import("components.com_subusers.includes.rbacl", JPATH_ADMINISTRATOR);
+
+			/*
+			if (RBACL::check($user->id, 'com_cluster', 'core.editallitemstate.' . $ucmTypeId))
+			{
+				return true;
+			}
+			*/
+
+			// Get com_subusers component status
+			$subUserExist = ComponentHelper::getComponent('com_subusers', true)->enabled;
+
+			// Check user have permission to edit record of assigned cluster
+			if ($subUserExist)
+			{
+				JLoader::import('components.com_tjucm.tables.item', JPATH_ADMINISTRATOR);
+				$itemTable = Table::getInstance('Item', 'TjucmTable', array('dbo', Factory::getDbo()));
+				$itemTable->load($contentId);
+
+				$joomlaPermission = $user->authorise('core.type.edititemstate', 'com_tjucm.type.' . $ucmTypeId);
+				$params   = ComponentHelper::getParams('com_dpe');
+				
+				if ($itemTable->cluster_id == $params->get('cluster_id'))
+				{
+					return true;
+				}
+				
+				return (RBACL::check($user->id, 'com_cluster', 'core.adduser', 'com_multiagency', $itemTable->cluster_id));
+			}
+			// DPE Hack ends here
+		}
+		else
+		{
+			return $user->authorise('core.type.edititemstate', 'com_tjucm.type.' . $ucmTypeId);
+		}
+	}
+
+	public static function canEditOwn($ucmTypeId, $contentId, $userId = 0)
+	{
+		$user = empty($userId) ? Factory::getUser() : Factory::getUser($userId);
+
+		// DPE Hack for ACL Check
+		if (TjucmAccess::hasCluster($ucmTypeId) && !$user->authorise('core.manageall', 'com_cluster'))
+		{
+			// Get com_subusers component status
+			$subUserExist = ComponentHelper::getComponent('com_subusers', true)->enabled;
+
+			// Check user have permission to edit record of assigned cluster
+			if ($subUserExist)
+			{
+				JLoader::import("/components/com_subusers/includes/rbacl", JPATH_ADMINISTRATOR);
+				JLoader::import('components.com_tjucm.tables.item', JPATH_ADMINISTRATOR);
+				$itemTable = Table::getInstance('Item', 'TjucmTable', array('dbo', Factory::getDbo()));
+				$itemTable->load($contentId);
+
+				/*
+				return RBACL::check($user->id, 'com_cluster', 'core.editownitem.' . $ucmTypeId, $itemTable->cluster_id);
+				*/
+				$params   = ComponentHelper::getParams('com_dpe');
+				
+				if ($itemTable->cluster_id == $params->get('cluster_id'))
+				{
+					return true;
+				}
+				
+				return (RBACL::check($user->id, 'com_cluster', 'core.editownitem.' . $ucmTypeId, 'com_tjucm', $itemTable->cluster_id));
+			}
+		}
+		else
+		{
+			return $user->authorise('core.type.editownitem', 'com_tjucm.type.' . $ucmTypeId);
+		}
+	}
+
+	public static function canDelete($ucmTypeId, $contentId, $userId = 0)
+	{
+		$user = empty($userId) ? Factory::getUser() : Factory::getUser($userId);
+
+		// Get UCM ID and type of parent if its Subform content id
+		JLoader::import('components.com_tjucm.tables.item', JPATH_ADMINISTRATOR);
+		$itemTable = Table::getInstance('Item', 'TjucmTable', array('dbo', Factory::getDbo()));
+		$itemTable->load($contentId);
+
+		if ($itemTable->parent_id)
+		{
+			JLoader::import('components.com_tjucm.tables.item', JPATH_ADMINISTRATOR);
+			$itemParentTable = Table::getInstance('Item', 'TjucmTable', array('dbo', Factory::getDbo()));
+			$itemParentTable->load($itemTable->parent_id);
+			$ucmTypeId = $itemParentTable->type_id;
+			$contentId = $itemParentTable->id;
+		}
+
+		// DPE Hack for ACL Check
+		if (TjucmAccess::hasCluster($ucmTypeId) && !$user->authorise('core.manageall', 'com_cluster'))
+		{
+			JLoader::import("/components/com_subusers/includes/rbacl", JPATH_ADMINISTRATOR);
+
+			/*
+			if (RBACL::check($user->id, 'com_cluster', 'core.deleteallitem.' . $ucmTypeId))
+			{
+				return true;
+			}
+			*/
+
+			// Get com_subusers component status
+			$subUserExist = ComponentHelper::getComponent('com_subusers', true)->enabled;
+
+			// Check user have permission to edit record of assigned cluster
+			if ($subUserExist)
+			{
+				JLoader::import('components.com_tjucm.tables.item', JPATH_ADMINISTRATOR);
+				$itemTable = Table::getInstance('Item', 'TjucmTable', array('dbo', Factory::getDbo()));
+				$itemTable->load($contentId);
+
+				if (!property_exists($itemTable, 'cluster_id') || !$itemTable->cluster_id)
+				{
+					return false;
+				}
+
+				/*
+				return RBACL::check($user->id, 'com_cluster', 'core.deleteitem.' . $ucmTypeId, $itemTable->cluster_id);
+				*/
+
+				return (RBACL::check($user->id, 'com_cluster', 'core.type.deleteitem.' . $ucmTypeId, 'com_tjucm', $itemTable->cluster_id));
+			}
+		}
+		else
+		{
+			return $user->authorise('core.type.deleteitem', 'com_tjucm.type.' . $ucmTypeId);
+		}
+	}
+
+	public static function canDeleteOwn($ucmTypeId, $contentId, $userId = 0)
+	{
+		$user = empty($userId) ? Factory::getUser() : Factory::getUser($userId);
+
+		// DPE Hack for ACL Check
+		if (TjucmAccess::hasCluster($ucmTypeId) && !$user->authorise('core.manageall', 'com_cluster'))
+		{
+			// Get com_subusers component status
+			$subUserExist = ComponentHelper::getComponent('com_subusers', true)->enabled;
+
+			// Check user have permission to edit record of assigned cluster
+			if ($subUserExist)
+			{
+				JLoader::import("/components/com_subusers/includes/rbacl", JPATH_ADMINISTRATOR);
+				JLoader::import('components.com_tjucm.tables.item', JPATH_ADMINISTRATOR);
+				$itemTable = Table::getInstance('Item', 'TjucmTable', array('dbo', Factory::getDbo()));
+				$itemTable->load($contentId);
+
+				if (!property_exists($itemTable, 'cluster_id') || !$itemTable->cluster_id)
+				{
+					return false;
+				}
+
+				/*
+					return RBACL::check($user->id, 'com_cluster', 'core.deleteownitem.' . $ucmTypeId, $itemTable->cluster_id);
+				*/
+
+				return (RBACL::check($user->id, 'com_cluster', 'core.type.deleteownitem.' . $ucmTypeId, 'com_tjucm', $itemTable->cluster_id));
+			}
+		}
+		else
+		{
+			return $user->authorise('core.type.deleteownitem', 'com_tjucm.type.' . $ucmTypeId);
+		}
+	}
+
+	public static function hasCluster($ucmTypeId)
+	{
+		if (ComponentHelper::getComponent('com_cluster', true)->enabled)
+		{
+			JLoader::import('components.com_tjucm.tables.type', JPATH_ADMINISTRATOR);
+			$typeTable = Table::getInstance('Type', 'TjucmTable', array('dbo', Factory::getDbo()));
+			$typeTable->load($ucmTypeId);
+
+			JLoader::import('components.com_tjfields.tables.field', JPATH_ADMINISTRATOR);
+			$fieldTable = Table::getInstance('Field', 'TjfieldsTable', array('dbo', Factory::getDbo()));
+			$fieldTable->load(array('client' => $typeTable->unique_identifier, 'type' => 'cluster', 'state' => 1));
+
+			if ($fieldTable->id)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+}

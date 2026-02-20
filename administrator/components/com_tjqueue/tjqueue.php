@@ -11,24 +11,20 @@
 defined('_JEXEC') or die('Restricted access');
 
 use Joomla\CMS\Factory;
+use Joomla\CMS\MVC\Controller\BaseController;
 
 // Get application and input
 $app = Factory::getApplication();
 $input = $app->getInput();
 
-// Get controller from MVCFactory
-$controller = $app->bootComponent('com_tjqueue')
-    ->getMVCFactory()
-    ->createController(
-        $input->getCmd('view', 'entries'),
-        'Administrator',
-        [],
-        $app,
-        $input
-    );
+// Require the base controller
+require_once JPATH_COMPONENT . '/controller.php';
+
+// Get an instance of the controller prefixed by Tjqueue
+$controller = BaseController::getInstance('Tjqueue');
 
 // Perform the Request task
-$controller->execute($input->get('task'));
+$controller->execute($input->getCmd('task'));
 
 // Redirect if set by the controller
 $controller->redirect();

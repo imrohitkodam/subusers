@@ -1,0 +1,429 @@
+<?php
+/**
+ * @package     TJ-UCM
+ * @subpackage  com_tjucm
+ *
+ * @author      Techjoomla <extensions@techjoomla.com>
+ * @copyright   Copyright (C) 2009 - 2019 Techjoomla. All rights reserved.
+ * @license     http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
+ */
+
+// No direct access
+defined('_JEXEC') or die;
+use Joomla\CMS\MVC\View\HtmlView;
+use Joomla\CMS\Form\Form;
+use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\Factory;
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Table\Table;
+use Joomla\CMS\Plugin\PluginHelper;
+
+jimport('joomla.application.component.view');
+jimport('joomla.application.component.controller');
+jimport('joomla.filesystem.file');
+jimport('joomla.database.table');
+
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Component\ComponentHelper;
+
+/**
+ * View to edit
+ *
+ * @since  1.6
+ */
+class TjucmViewItemform extends HtmlView
+{
+	/**
+	 * The Form object
+	 *
+	 * @var  Form
+	 */
+	protected $form;
+
+	/**
+	 * The active item
+	 *
+	 * @var  object
+	 */
+	protected $item;
+
+	/**
+	 * The model state
+	 *
+	 * @var  object
+	 */
+	protected $state;
+
+	/**
+	 * The model state
+	 *
+	 * @var  object|array
+	 */
+	protected $params;
+
+	/**
+	 * @var  boolean
+	 *
+	 * @since __DEPLOY_VERSION__
+	 */
+	protected $canSave;
+
+	/**
+	 * The Record Id
+	 *
+	 * @var  Int
+	 *
+	 * @since __DEPLOY_VERSION__
+	 */
+	protected $id;
+
+	/**
+	 * The Copy Record Id
+	 *
+	 * @var  Int
+	 *
+	 * @since __DEPLOY_VERSION__
+	 */
+	protected $copyRecId;
+
+	/**
+	 * The Title of view
+	 *
+	 * @var  String
+	 *
+	 * @since 1.2.4
+	 */
+	protected $title;
+
+	protected $assignedUsers = null;
+
+	protected $canEdit;
+
+	/**
+	 * Display the view
+	 *
+	 * @param   string  $tpl  Template name
+	 *
+	 * @return void
+	 *
+	 * @throws Exception
+	 */
+	public function display($tpl = null)
+	{
+
+		$app  = Factory::getApplication();
+		$input = $app->input;
+		$user = Factory::getUser();
+
+		if (!$user->id)
+		{
+			$msg = Text::_('COM_TJUCM_LOGIN_MSG');
+
+			// Get current url.
+			$current = Uri::getInstance()->toString();
+			$url = base64_encode($current);
+			Factory::getApplication()->redirect(Route::_('index.php?option=com_users&view=login&return=' . $url, false), $msg);
+		}
+
+		$this->state   = $this->get('State');
+		$this->id = $input->getInt('id', $input->getInt('content_id', 0));
+
+		$menu = $app->getMenu();
+
+		if ($menu->getDefault()->query['id'] == $this->id)
+		{
+			$this->id = 0;
+		}
+
+		// Include models
+		BaseDatabaseModel::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_tjucm/models');
+
+		/* Get model instance here */
+		$model = $this->getModel();
+		$model->setState('item.id', $this->id);
+		$this->ucmTypeId = $model->getState('ucmType.id');
+
+		$this->item    = $this->get('Data');
+		$this->params  = $app->getParams('com_tjucm');
+		$this->canSave = $this->get('CanSave');
+		$this->form    = $this->get('Form');
+		$this->client  = $input->get('client');
+
+		$clusterId = $input->getInt('cluster_id', 0);
+
+		
+
+		if ($this->id && !$clusterId )
+		{
+			$input->set('cluster_id', $this->item->cluster_id);
+			$clusterId = $this->item->cluster_id;
+		}
+
+		// DPE hack to set the cluster for admin and single cluster
+
+		JLoader::import("/components/com_cluster/includes/cluster", JPATH_ADMINISTRATOR);
+		$clusterUserModel = ClusterFactory::model('ClusterUser', array('ignore_request' => true));
+		$clusters = $clusterUserModel->getUsersClusters($user->id);
+		if (count($clusters) == 1)
+		{
+			$input->set('cluster_id', $clusters[0]->cluster_id);
+			$clusterId = $this->item->cluster_id = $clusters[0]->cluster_id;
+		}
+		
+		// DPE hack end
+		$this->canEdit = TjucmAccess::canEdit($this->item->type_id, $this->item->id);
+
+		if (!$this->item->id)
+		{
+			if (!TjucmAccess::canCreate($this->ucmTypeId))
+			{
+				$app->enqueueMessage(Text::_('JERROR_ALERTNOAUTHOR'), 'error');
+				$app->setHeader('status', 403, true);
+
+				return;
+			}
+		}
+		elseif (!$this->canEdit)
+		{
+			PluginHelper::importPlugin('tjucmdpe');
+			
+			$result = Factory::getApplication()->triggerEvent('onBeforeTjucmItemFormDisplay', array(&$this->item, &$this->form_extra));
+
+			// DPE hack start to don't allow access for draft record
+
+			if (!$this->item->draft)
+			{
+				$this->assignedUsers = trim(implode("\n", $result));
+			}
+			// DPE hack end
+
+			if (empty($this->assignedUsers))
+			{
+				$app->enqueueMessage(Text::_('JERROR_ALERTNOAUTHOR'), 'error');
+				$app->setHeader('status', 403, true);
+
+				return;
+			}
+		}
+
+		// Get a copy record id
+		$this->copyRecId = (int) $app->getUserState('com_tjucm.edit.itemform.data.copy_id', 0);
+
+		// Check copy id set and empty request id record
+		if ($this->copyRecId && !$this->id)
+		{
+			$this->id = $this->copyRecId;
+		}
+
+		// Code check cluster Id of URL with saved cluster_id both are equal in edit mode
+		if (!$this->copyRecId && $this->id)
+		{
+			$clusterId = $input->getInt("cluster_id", 0);
+
+			if ($clusterId != $this->item->cluster_id)
+			{
+				$app->enqueueMessage(Text::_('JERROR_ALERTNOAUTHOR'), 'error');
+				$app->setHeader('status', 403, true);
+
+				return;
+			}
+		}
+
+		// If did not get the client from url then get if from menu param
+		if (empty($this->client))
+		{
+			// Get the active item
+			$menuItem = $app->getMenu()->getActive();
+
+			// Get the params
+			$this->menuparams = $menuItem->getParams();
+
+			if (!empty($this->menuparams))
+			{
+				$this->ucm_type   = $this->menuparams->get('ucm_type');
+
+				if (!empty($this->ucm_type))
+				{
+					JLoader::import('components.com_tjfields.tables.type', JPATH_ADMINISTRATOR);
+					$ucmTypeTable = Table::getInstance('Type', 'TjucmTable', array('dbo', Factory::getDbo()));
+					$ucmTypeTable->load(array('alias' => $this->ucm_type));
+					$this->client = $ucmTypeTable->unique_identifier;
+				}
+			}
+		}
+
+		if (empty($this->client))
+		{
+			$app->enqueueMessage(Text::_('COM_TJUCM_ITEM_DOESNT_EXIST'), 'error');
+			$app->setHeader('status', 404, true);
+
+			return;
+		}
+
+		if (empty($this->title))
+		{
+			// Get the active item
+			$menuItem = $app->getMenu()->getActive();
+
+				// Get the params
+				$this->menuparams = $menuItem->getParams();
+
+				if (!empty($this->menuparams))
+				{
+					$this->title  = $this->menuparams->get('ucm_type');
+				}
+		}
+
+		// Check the view access to the itemform (the model has already computed the values).
+		if ($this->item->params->get('access-view') == false)
+		{
+			/*
+			 $app->enqueueMessage(Text::_('JERROR_ALERTNOAUTHOR'), 'error');
+			 $app->setHeader('status', 403, true);
+
+			return;
+			*/
+		}
+
+		// Get ucm type data
+		JLoader::import('components.com_tjucm.tables.type', JPATH_ADMINISTRATOR);
+		$typeTable = Table::getInstance('Type', 'TjucmTable', array('dbo', Factory::getDbo()));
+		$typeTable->load(array('unique_identifier' => $this->client));
+		$typeParams = json_decode($typeTable->params);
+
+		// Check if the UCM type is unpublished
+		if ($typeTable->state == "0")
+		{
+			$app->enqueueMessage(Text::_('COM_TJUCM_ITEM_DOESNT_EXIST'), 'error');
+			$app->setHeader('status', 404, true);
+
+			return;
+		}
+
+		// Set Layout to type view
+		$this->layout = isset($typeParams->layout) ? $typeParams->layout : '';
+
+		if (isset($typeParams->layout) && !empty($typeParams->layout))
+		{
+			$this->setLayout($typeParams->layout);
+		}
+
+		$allowedCount = $typeParams->allowed_count;
+		$userId = $user->id;
+
+		if (empty($this->id))
+		{
+			$this->allowedToAdd = $model->allowedToAddTypeData($userId, $this->client, $allowedCount);
+
+			if (!$this->allowedToAdd)
+			{
+				JLoader::import('controllers.itemform', JPATH_SITE . '/components/com_tjucm');
+				$itemFormController = new TjucmControllerItemForm;
+				$itemFormController->redirectToListView($typeId, $allowedCount);
+			}
+		}
+
+		$view = explode('.', $this->client);
+
+		// Call to extra fields
+		$this->form_extra = $model->getFormExtra(
+		array(
+			"clientComponent" => 'com_tjucm',
+			"client" => $this->client,
+			"view" => $view[1],
+			"layout" => 'edit',
+			"content_id" => $this->id, )
+			);
+
+		// Check if draft save is enabled for the form
+		Table::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_tjucm/tables');
+		$tjUcmTypeTable = Table::getInstance('Type', 'TjucmTable');
+		$tjUcmTypeTable->load(array('unique_identifier' => $this->client));
+		$typeParams = json_decode($tjUcmTypeTable->params);
+
+		$this->allow_auto_save = (isset($typeParams->allow_auto_save) && empty($typeParams->allow_auto_save)) ? 0 : 1;
+		$this->allow_draft_save = (isset($typeParams->allow_draft_save) && !empty($typeParams->allow_draft_save)) ? 1 : 0;
+		$this->allow_bit_rate = (isset($typeParams->bitrate_on) && !empty($typeParams->bitrate_on)) ? 1 : 0;
+		$this->allow_bit_rate_seconds = $typeParams->bitrate_seconds;
+
+		// Check for errors.
+		if (count($errors = $this->get('Errors')))
+		{
+			$app->enqueueMessage(Text::_("COM_TJUCM_SOMETHING_WENT_WRONG"), 'error');
+
+			return false;
+		}
+
+		// Below ucm trigger is commented beacause used above
+
+		/*
+		PluginHelper::importPlugin('tjucm');
+		
+		Factory::getApplication()->triggerEvent('tjucmOnBeforeItemFormDisplay', array(&$this->item, &$this->form_extra));
+		*/
+
+		$this->_prepareDocument();
+
+		parent::display($tpl);
+	}
+
+	/**
+	 * Prepares the document
+	 *
+	 * @return void
+	 *
+	 * @throws Exception
+	 */
+	protected function _prepareDocument()
+	{
+		$app   = Factory::getApplication();
+		$menus = $app->getMenu();
+		$this->title = null;
+
+		// Because the application sets a default page title,
+		// we need to get it from the menu item itself
+		$menu = $menus->getActive();
+
+		if ($menu)
+		{
+			$this->params->def('page_heading', $this->params->get('page_title', $menu->title));
+		}
+		else
+		{
+			$this->params->def('page_heading', Text::_('COM_TJUCM_DEFAULT_PAGE_TITLE'));
+		}
+
+		$this->title = $this->params->get('page_title', '');
+
+		if (empty($this->title))
+		{
+			$this->title = $app->get('sitename');
+		}
+		elseif ($app->get('sitename_pagetitles', 0) == 1)
+		{
+			$this->title = Text::sprintf('JPAGETITLE', $app->get('sitename'), $this->title);
+		}
+		elseif ($app->get('sitename_pagetitles', 0) == 2)
+		{
+			$this->title = Text::sprintf('JPAGETITLE', $this->title, $app->get('sitename'));
+		}
+
+		$this->document->setTitle($this->title);
+
+		if ($this->params->get('menu-meta_description'))
+		{
+			$this->document->setDescription($this->params->get('menu-meta_description'));
+		}
+
+		if ($this->params->get('menu-meta_keywords'))
+		{
+			$this->document->setMetadata('keywords', $this->params->get('menu-meta_keywords'));
+		}
+
+		if ($this->params->get('robots'))
+		{
+			$this->document->setMetadata('robots', $this->params->get('robots'));
+		}
+	}
+}
